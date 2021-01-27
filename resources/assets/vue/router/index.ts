@@ -13,6 +13,7 @@ const Users = () => import('../views/Users.vue');
 const UsersGraphQL = () => import('../views/UsersGraphQL.vue');
 
 import userTypes from '@/utils/userTypes';
+import AuthCallback from "@/views/AuthCallback.vue";
 
 Vue.use(Router);
 
@@ -79,6 +80,15 @@ const router = new Router({
       component: AuthLogin,
       meta: {
         title: Vue.i18n.translate('login.login', null),
+        auth: false,
+      },
+    },
+    {
+      path: '/sso/callback',
+      name: 'auth.callback',
+      component: AuthCallback,
+      meta: {
+        title: Vue.i18n.translate('login.callback', null),
         auth: false,
       },
     },

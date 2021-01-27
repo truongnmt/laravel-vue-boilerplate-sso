@@ -22,6 +22,7 @@ Route::group([
     Route::post('logout', 'AuthController@logout');
     Route::post('refresh', 'AuthController@refresh');
     Route::get('user', 'AuthController@user');
+    Route::post('sso', 'AuthController@sso');
 
     Route::post('register', 'RegisterController@register');
 });

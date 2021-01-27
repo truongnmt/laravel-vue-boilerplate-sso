@@ -45,6 +45,17 @@ export default class AuthLogin extends Vue {
 
     this.isSending = false;
   }
+
+  private sso(): void {
+    this.$auth.oauth2({
+      provider: 'github',
+      state: {
+        staySignedIn: true,
+        rememberMe: true,
+      },
+      rememberMe: true,
+    });
+  }
 }
 </script>
 
@@ -98,6 +109,13 @@ b-form#login(@submit='login')
       variant='primary',
       to='/register',
     ) {{ $t('login.register') }}
+
+  hr
+  b-button(
+    variant='primary',
+    :class='{ disabled: isSending }',
+    @click='sso'
+  ) {{ $t('login.sso')}}
 </template>
 
 <style scoped>

@@ -136,22 +136,22 @@ export default class Users extends Vue {
     return total;
   }
 
-  async deleteUserConfirm({ id }: User, query): Promise<void> {
-    if (!(await dialog('front.delete_user_confirmation', true))) {
-      return;
-    }
-
-    const result = await this.$apollo.mutate({
-      mutation: deleteUserMutation,
-      variables: {
-        id,
-      },
-    });
-
-    if (result.data.deleteUser.status) {
-      query.refetch();
-    }
-  }
+  // async deleteUserConfirm({ id }: User, query): Promise<void> {
+  //   if (!(await dialog('front.delete_user_confirmation', true))) {
+  //     return;
+  //   }
+  //
+  //   const result = await this.$apollo.mutate({
+  //     mutation: deleteUserMutation,
+  //     variables: {
+  //       id,
+  //     },
+  //   });
+  //
+  //   if (result.data.deleteUser.status) {
+  //     query.refetch();
+  //   }
+  // }
 }
 </script>
 

@@ -2,9 +2,13 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Libs\Sso\CognitoAuthRequest;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -15,7 +19,7 @@ class AuthController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth:api', ['except' => ['login']]);
+        $this->middleware('auth:api', ['except' => ['login', 'sso']]);
     }
 
     /**
@@ -70,6 +74,47 @@ class AuthController extends Controller
     public function refresh()
     {
         return $this->respondWithToken($this->guard()->refresh());
+    }
+
+    /**
+     * OpenID Connect: exchange code for token
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function sso(Request $request)
+    {
+        $invoker = new CognitoAuthRequest();
+        $tokenResponse = $invoker->invokeTokenRequest([
+            'loginResult' => $request->all(),
+            'appUrl'      => config('app.url')
+        ]);
+
+        $tokens = \json_decode(
+            $tokenResponse->getBody(), true
+        );
+
+        $tokenParts = explode(".", $tokens['id_token']);
+        $tokenPayload = base64_decode($tokenParts[1]);
+        $jwtPayload = json_decode($tokenPayload, true);
+
+        $user = User::where('email', '=', $jwtPayload['email'])->first();
+        if($user) {
+            $token = $this->guard()->login($user);
+            return $this->respondWithToken($token);
+        } else {
+            $user = new User();
+            $user->type_id = 2;
+            $user->name = $jwtPayload['username'];
+            $user->email = $jwtPayload['email'];
+            $user->password = Hash::make(Str::random(12));
+            $user->save();
+
+            $token = $this->guard()->login($user);
+            if ($request->rememberMe) {
+                $this->guard()->factory()->setTTL(env('JWT_TTL', 7*24*3600));
+            }
+            return $this->respondWithToken($token);
+        }
     }
 
     /**
